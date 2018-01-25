@@ -1,0 +1,551 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<project name="schizophrenia_genes" id="Project_24606e1a" template="Default" database="MySql" >
+	<schema name="schizophrenia" schemaname="schizophrenia" >
+		<table name="clinvar" >
+			<column name="id" type="int" jt="4" mandatory="y" unsigned="y" />
+			<column name="clinical_significance" type="varchar" length="100" jt="12" />
+			<column name="variant_type" type="varchar" length="100" jt="12" />
+			<index name="pk_clinvar" unique="PRIMARY_KEY" >
+				<column name="id" />
+			</index>
+			<storage><![CDATA[engine=InnoDB]]></storage>
+		</table>
+		<table name="gene_clinvar" >
+			<column name="gene_symbol" type="varchar" length="10" jt="12" mandatory="y" />
+			<column name="clinvar_id" type="int" jt="4" mandatory="y" unsigned="y" />
+			<index name="idx_gene_clinvar_gene" unique="NORMAL" >
+				<column name="gene_symbol" />
+			</index>
+			<index name="idx_gene_clinvar_clinvar" unique="NORMAL" >
+				<column name="clinvar_id" />
+			</index>
+			<index name="idx_gene_clinvar" unique="PRIMARY_KEY" >
+				<column name="gene_symbol" />
+				<column name="clinvar_id" />
+			</index>
+			<fk name="fk_gene_clinvar_gene" to_schema="schizophrenia" to_table="genes" >
+				<fk_column name="gene_symbol" pk="gene_symbol" />
+			</fk>
+			<fk name="fk_gene_clinvar_clinvar" to_schema="schizophrenia" to_table="clinvar" >
+				<fk_column name="clinvar_id" pk="id" />
+			</fk>
+			<storage><![CDATA[engine=InnoDB]]></storage>
+		</table>
+		<table name="gene_go" >
+			<column name="gene_symbol" type="varchar" length="10" jt="12" mandatory="y" />
+			<column name="go_id" type="int" jt="4" mandatory="y" unsigned="y" />
+			<column name="evidence_code" type="varchar" length="3" jt="12" mandatory="y" />
+			<index name="idx_gene_go_gene" unique="NORMAL" >
+				<column name="gene_symbol" />
+			</index>
+			<index name="idx_gene_go_go" unique="NORMAL" >
+				<column name="go_id" />
+			</index>
+			<index name="idx_gene_go" unique="PRIMARY_KEY" >
+				<column name="gene_symbol" />
+				<column name="go_id" />
+				<column name="evidence_code" />
+			</index>
+			<fk name="fk_genes_go_genes" to_schema="schizophrenia" to_table="genes" >
+				<fk_column name="gene_symbol" pk="gene_symbol" />
+			</fk>
+			<fk name="fk_gene_go_go" to_schema="schizophrenia" to_table="go" >
+				<fk_column name="go_id" pk="go_id" />
+			</fk>
+			<storage><![CDATA[engine=InnoDB]]></storage>
+		</table>
+		<table name="genes" >
+			<column name="gene_symbol" type="varchar" length="10" jt="12" mandatory="y" />
+			<column name="location" type="varchar" length="50" jt="12" />
+			<index name="pk_gene" unique="PRIMARY_KEY" >
+				<column name="gene_symbol" />
+			</index>
+			<storage><![CDATA[engine=InnoDB]]></storage>
+		</table>
+		<table name="go" >
+			<column name="go_id" type="int" jt="4" mandatory="y" unsigned="y" />
+			<column name="category" type="varchar" length="50" jt="12" />
+			<index name="pk_go" unique="PRIMARY_KEY" >
+				<column name="go_id" />
+			</index>
+			<storage><![CDATA[engine=InnoDB]]></storage>
+		</table>
+		<table name="transcripts_proteins" >
+			<column name="accession_mrna" type="varchar" length="25" jt="12" mandatory="y" />
+			<column name="accession_protein" type="varchar" length="25" jt="12" />
+			<column name="size_mrna" type="int" jt="4" unsigned="y" />
+			<column name="size_protein" type="int" jt="4" unsigned="y" />
+			<column name="gene_symbol" type="varchar" length="10" jt="12" />
+			<index name="pk_transcript_protein" unique="PRIMARY_KEY" >
+				<column name="accession_mrna" />
+			</index>
+			<index name="idx_transcripts_proteins" unique="NORMAL" >
+				<column name="gene_symbol" />
+			</index>
+			<fk name="fk_transcripts_proteins_genes" to_schema="schizophrenia" to_table="genes" >
+				<fk_column name="gene_symbol" pk="gene_symbol" />
+			</fk>
+			<storage><![CDATA[engine=InnoDB]]></storage>
+		</table>
+	</schema>
+	<layout name="Default Layout" id="Layout_110c504a" show_relation="columns" >
+		<entity schema="schizophrenia" name="genes" color="bcd5f1" x="336" y="48" />
+		<entity schema="schizophrenia" name="transcripts_proteins" color="bcd5f1" x="48" y="48" />
+		<entity schema="schizophrenia" name="gene_clinvar" color="bcd5f1" x="336" y="224" />
+		<entity schema="schizophrenia" name="go" color="bcd5f1" x="816" y="48" />
+		<entity schema="schizophrenia" name="clinvar" color="bcd5f1" x="320" y="400" />
+		<entity schema="schizophrenia" name="gene_go" color="bcd5f1" x="608" y="48" />
+		<script name="Sql" id="Query_6b32640" language="SQL" >
+			<string><![CDATA[CREATE SCHEMA projeto_final;
+
+CREATE TABLE projeto_final.clinvar ( 
+	id                   int  NOT NULL  ,
+	clinical_significance varchar(50)    ,
+	variant_type         varchar(100)    ,
+	CONSTRAINT pk_clinvar PRIMARY KEY ( id )
+ ) engine=InnoDB;
+
+CREATE TABLE projeto_final.genes ( 
+	gene_symbol          varchar(25)  NOT NULL  ,
+	location             varchar(50)    ,
+	CONSTRAINT pk_gene PRIMARY KEY ( gene_symbol )
+ ) engine=InnoDB;
+
+CREATE TABLE projeto_final.go ( 
+	go_id                int UNSIGNED NOT NULL  ,
+	qualifier            varchar(200)    ,
+	pubmed               int UNSIGNED   ,
+	category             varchar(50)    ,
+	CONSTRAINT pk_go PRIMARY KEY ( go_id )
+ ) engine=InnoDB;
+
+CREATE TABLE projeto_final.transcripts_proteins ( 
+	accesion_mrna        int  NOT NULL  ,
+	accession_protein    int    ,
+	size_mrna            int    ,
+	size_protein         int    ,
+	gene_symbol          varchar(25)    ,
+	CONSTRAINT pk_transcript_protein PRIMARY KEY ( accesion_mrna )
+ ) engine=InnoDB;
+
+CREATE INDEX idx_transcripts_proteins ON projeto_final.transcripts_proteins ( gene_symbol );
+
+CREATE TABLE projeto_final.gene_clinvar ( 
+	gene_symbol          varchar(25)    ,
+	clinvar_id           int    
+ ) engine=InnoDB;
+
+CREATE INDEX idx_gene_clinvar ON projeto_final.gene_clinvar ( gene_symbol );
+
+CREATE INDEX idx_gene_clinvar ON projeto_final.gene_clinvar ( clinvar_id );
+
+CREATE TABLE projeto_final.gene_go ( 
+	gene_symbol          varchar(25)    ,
+	go_id                int    
+ ) engine=InnoDB;
+
+CREATE INDEX idx_gene_go ON projeto_final.gene_go ( gene_symbol );
+
+CREATE INDEX idx_gene_go ON projeto_final.gene_go ( go_id );
+
+ALTER TABLE projeto_final.gene_clinvar ADD CONSTRAINT fk_genes FOREIGN KEY ( gene_symbol ) REFERENCES projeto_final.genes( gene_symbol ) ON DELETE NO ACTION ON UPDATE NO ACTION;
+
+ALTER TABLE projeto_final.gene_clinvar ADD CONSTRAINT fk_clinvar FOREIGN KEY ( clinvar_id ) REFERENCES projeto_final.clinvar( id ) ON DELETE NO ACTION ON UPDATE NO ACTION;
+
+ALTER TABLE projeto_final.gene_go ADD CONSTRAINT fk_genes FOREIGN KEY ( gene_symbol ) REFERENCES projeto_final.genes( gene_symbol ) ON DELETE NO ACTION ON UPDATE NO ACTION;
+
+ALTER TABLE projeto_final.gene_go ADD CONSTRAINT fk_go FOREIGN KEY ( go_id ) REFERENCES projeto_final.go( go_id ) ON DELETE NO ACTION ON UPDATE NO ACTION;
+
+ALTER TABLE projeto_final.transcripts_proteins ADD CONSTRAINT fk_genes FOREIGN KEY ( gene_symbol ) REFERENCES projeto_final.genes( gene_symbol ) ON DELETE NO ACTION ON UPDATE NO ACTION;
+
+]]></string>
+		</script>
+		<script name="Sql_001" id="Query_109d3dfd" language="SQL" >
+			<string><![CDATA[CREATE SCHEMA projeto_final;
+
+CREATE TABLE projeto_final.clinvar ( 
+	id                   int UNSIGNED NOT NULL  ,
+	clinical_significance varchar(50)    ,
+	variant_type         varchar(100)    ,
+	CONSTRAINT pk_clinvar PRIMARY KEY ( id )
+ ) engine=InnoDB;
+
+CREATE TABLE projeto_final.genes ( 
+	gene_symbol          varchar(25)  NOT NULL  ,
+	location             varchar(50)    ,
+	CONSTRAINT pk_gene PRIMARY KEY ( gene_symbol )
+ ) engine=InnoDB;
+
+CREATE TABLE projeto_final.go ( 
+	go_id                int UNSIGNED NOT NULL  ,
+	qualifier            varchar(200)    ,
+	pubmed               int UNSIGNED   ,
+	category             varchar(50)    ,
+	CONSTRAINT pk_go PRIMARY KEY ( go_id )
+ ) engine=InnoDB;
+
+CREATE TABLE projeto_final.transcripts_proteins ( 
+	accesion_mrna        int UNSIGNED NOT NULL  ,
+	accession_protein    int UNSIGNED   ,
+	size_mrna            int UNSIGNED   ,
+	size_protein         int UNSIGNED   ,
+	gene_symbol          varchar(25)    ,
+	CONSTRAINT pk_transcript_protein PRIMARY KEY ( accesion_mrna )
+ ) engine=InnoDB;
+
+CREATE INDEX idx_transcripts_proteins ON projeto_final.transcripts_proteins ( gene_symbol );
+
+CREATE TABLE projeto_final.gene_clinvar ( 
+	gene_symbol          varchar(25)    ,
+	clinvar_id           int UNSIGNED   
+ ) engine=InnoDB;
+
+CREATE INDEX idx_gene_clinvar ON projeto_final.gene_clinvar ( gene_symbol );
+
+CREATE INDEX idx_gene_clinvar ON projeto_final.gene_clinvar ( clinvar_id );
+
+CREATE TABLE projeto_final.gene_go ( 
+	gene_symbol          varchar(25)    ,
+	go_id                int UNSIGNED   
+ ) engine=InnoDB;
+
+CREATE INDEX idx_gene_go ON projeto_final.gene_go ( gene_symbol );
+
+CREATE INDEX idx_gene_go ON projeto_final.gene_go ( go_id );
+
+ALTER TABLE projeto_final.gene_clinvar ADD CONSTRAINT fk_genes FOREIGN KEY ( gene_symbol ) REFERENCES projeto_final.genes( gene_symbol ) ON DELETE NO ACTION ON UPDATE NO ACTION;
+
+ALTER TABLE projeto_final.gene_clinvar ADD CONSTRAINT fk_clinvar FOREIGN KEY ( clinvar_id ) REFERENCES projeto_final.clinvar( id ) ON DELETE NO ACTION ON UPDATE NO ACTION;
+
+ALTER TABLE projeto_final.gene_go ADD CONSTRAINT fk_genes FOREIGN KEY ( gene_symbol ) REFERENCES projeto_final.genes( gene_symbol ) ON DELETE NO ACTION ON UPDATE NO ACTION;
+
+ALTER TABLE projeto_final.gene_go ADD CONSTRAINT fk_go FOREIGN KEY ( go_id ) REFERENCES projeto_final.go( go_id ) ON DELETE NO ACTION ON UPDATE NO ACTION;
+
+ALTER TABLE projeto_final.transcripts_proteins ADD CONSTRAINT fk_genes FOREIGN KEY ( gene_symbol ) REFERENCES projeto_final.genes( gene_symbol ) ON DELETE NO ACTION ON UPDATE NO ACTION;
+
+]]></string>
+		</script>
+		<script name="Sql_002" id="Query_1fd8419c" language="SQL" >
+			<string><![CDATA[CREATE SCHEMA projeto_final;
+
+CREATE TABLE projeto_final.clinvar ( 
+	id                   int UNSIGNED NOT NULL  ,
+	clinical_significance varchar(50)    ,
+	variant_type         varchar(100)    ,
+	CONSTRAINT pk_clinvar PRIMARY KEY ( id )
+ ) engine=InnoDB;
+
+CREATE TABLE projeto_final.genes ( 
+	gene_symbol          varchar(10)  NOT NULL  ,
+	location             varchar(50)    ,
+	CONSTRAINT pk_gene PRIMARY KEY ( gene_symbol )
+ ) engine=InnoDB;
+
+CREATE TABLE projeto_final.go ( 
+	go_id                int UNSIGNED NOT NULL  ,
+	qualifier            varchar(200)    ,
+	pubmed               int UNSIGNED   ,
+	category             varchar(50)    ,
+	CONSTRAINT pk_go PRIMARY KEY ( go_id )
+ ) engine=InnoDB;
+
+CREATE TABLE projeto_final.transcripts_proteins ( 
+	accesion_mrna        int UNSIGNED NOT NULL  ,
+	accession_protein    int UNSIGNED   ,
+	size_mrna            int UNSIGNED   ,
+	size_protein         int UNSIGNED   ,
+	gene_symbol          varchar(10)    ,
+	CONSTRAINT pk_transcript_protein PRIMARY KEY ( accesion_mrna )
+ ) engine=InnoDB;
+
+CREATE INDEX idx_transcripts_proteins ON projeto_final.transcripts_proteins ( gene_symbol );
+
+CREATE TABLE projeto_final.gene_clinvar ( 
+	gene_symbol          varchar(10)    ,
+	clinvar_id           int UNSIGNED   
+ ) engine=InnoDB;
+
+CREATE INDEX idx_gene_clinvar ON projeto_final.gene_clinvar ( gene_symbol );
+
+CREATE INDEX idx_gene_clinvar ON projeto_final.gene_clinvar ( clinvar_id );
+
+CREATE TABLE projeto_final.gene_go ( 
+	gene_symbol          varchar(10)    ,
+	go_id                int UNSIGNED   
+ ) engine=InnoDB;
+
+CREATE INDEX idx_gene_go ON projeto_final.gene_go ( gene_symbol );
+
+CREATE INDEX idx_gene_go ON projeto_final.gene_go ( go_id );
+
+ALTER TABLE projeto_final.gene_clinvar ADD CONSTRAINT fk_genes FOREIGN KEY ( gene_symbol ) REFERENCES projeto_final.genes( gene_symbol ) ON DELETE NO ACTION ON UPDATE NO ACTION;
+
+ALTER TABLE projeto_final.gene_clinvar ADD CONSTRAINT fk_clinvar FOREIGN KEY ( clinvar_id ) REFERENCES projeto_final.clinvar( id ) ON DELETE NO ACTION ON UPDATE NO ACTION;
+
+ALTER TABLE projeto_final.gene_go ADD CONSTRAINT fk_genes FOREIGN KEY ( gene_symbol ) REFERENCES projeto_final.genes( gene_symbol ) ON DELETE NO ACTION ON UPDATE NO ACTION;
+
+ALTER TABLE projeto_final.gene_go ADD CONSTRAINT fk_go FOREIGN KEY ( go_id ) REFERENCES projeto_final.go( go_id ) ON DELETE NO ACTION ON UPDATE NO ACTION;
+
+ALTER TABLE projeto_final.transcripts_proteins ADD CONSTRAINT fk_genes FOREIGN KEY ( gene_symbol ) REFERENCES projeto_final.genes( gene_symbol ) ON DELETE NO ACTION ON UPDATE NO ACTION;
+
+]]></string>
+		</script>
+		<script name="Sql_003" id="Query_6720253" language="SQL" >
+			<string><![CDATA[CREATE SCHEMA projeto_final;
+
+CREATE TABLE projeto_final.clinvar ( 
+	id                   int UNSIGNED NOT NULL  ,
+	clinical_significance varchar(50)    ,
+	variant_type         varchar(100)    ,
+	CONSTRAINT pk_clinvar PRIMARY KEY ( id )
+ ) engine=InnoDB;
+
+CREATE TABLE projeto_final.genes ( 
+	gene_symbol          varchar(10)  NOT NULL  ,
+	location             varchar(50)    ,
+	CONSTRAINT pk_gene PRIMARY KEY ( gene_symbol )
+ ) engine=InnoDB;
+
+CREATE TABLE projeto_final.go ( 
+	go_id                int UNSIGNED NOT NULL  ,
+	qualifier            varchar(200)    ,
+	category             varchar(50)    ,
+	CONSTRAINT pk_go PRIMARY KEY ( go_id )
+ ) engine=InnoDB;
+
+CREATE TABLE projeto_final.transcripts_proteins ( 
+	accesion_mrna        int UNSIGNED NOT NULL  ,
+	accession_protein    int UNSIGNED   ,
+	size_mrna            int UNSIGNED   ,
+	size_protein         int UNSIGNED   ,
+	gene_symbol          varchar(10)    ,
+	CONSTRAINT pk_transcript_protein PRIMARY KEY ( accesion_mrna )
+ ) engine=InnoDB;
+
+CREATE INDEX idx_transcripts_proteins ON projeto_final.transcripts_proteins ( gene_symbol );
+
+CREATE TABLE projeto_final.gene_clinvar ( 
+	gene_symbol          varchar(10)    ,
+	clinvar_id           int UNSIGNED   
+ ) engine=InnoDB;
+
+CREATE INDEX idx_gene_clinvar ON projeto_final.gene_clinvar ( gene_symbol );
+
+CREATE INDEX idx_gene_clinvar ON projeto_final.gene_clinvar ( clinvar_id );
+
+CREATE TABLE projeto_final.gene_go ( 
+	gene_symbol          varchar(10)    ,
+	go_id                int UNSIGNED   
+ ) engine=InnoDB;
+
+CREATE INDEX idx_gene_go ON projeto_final.gene_go ( gene_symbol );
+
+CREATE INDEX idx_gene_go ON projeto_final.gene_go ( go_id );
+
+ALTER TABLE projeto_final.gene_clinvar ADD CONSTRAINT fk_genes FOREIGN KEY ( gene_symbol ) REFERENCES projeto_final.genes( gene_symbol ) ON DELETE NO ACTION ON UPDATE NO ACTION;
+
+ALTER TABLE projeto_final.gene_clinvar ADD CONSTRAINT fk_clinvar FOREIGN KEY ( clinvar_id ) REFERENCES projeto_final.clinvar( id ) ON DELETE NO ACTION ON UPDATE NO ACTION;
+
+ALTER TABLE projeto_final.gene_go ADD CONSTRAINT fk_genes FOREIGN KEY ( gene_symbol ) REFERENCES projeto_final.genes( gene_symbol ) ON DELETE NO ACTION ON UPDATE NO ACTION;
+
+ALTER TABLE projeto_final.gene_go ADD CONSTRAINT fk_go FOREIGN KEY ( go_id ) REFERENCES projeto_final.go( go_id ) ON DELETE NO ACTION ON UPDATE NO ACTION;
+
+ALTER TABLE projeto_final.transcripts_proteins ADD CONSTRAINT fk_genes FOREIGN KEY ( gene_symbol ) REFERENCES projeto_final.genes( gene_symbol ) ON DELETE NO ACTION ON UPDATE NO ACTION;
+
+]]></string>
+		</script>
+		<script name="Sql_004" id="Query_35e5f092" language="SQL" >
+			<string><![CDATA[CREATE SCHEMA projeto_final;
+
+CREATE TABLE projeto_final.clinvar ( 
+	id                   int UNSIGNED NOT NULL  ,
+	clinical_significance varchar(50)    ,
+	variant_type         varchar(100)    ,
+	CONSTRAINT pk_clinvar PRIMARY KEY ( id )
+ ) engine=InnoDB;
+
+CREATE TABLE projeto_final.genes ( 
+	gene_symbol          varchar(10)  NOT NULL  ,
+	location             varchar(50)    ,
+	CONSTRAINT pk_gene PRIMARY KEY ( gene_symbol )
+ ) engine=InnoDB;
+
+CREATE TABLE projeto_final.go ( 
+	go_id                int UNSIGNED NOT NULL  ,
+	qualifier            varchar(200)    ,
+	category             varchar(50)    ,
+	CONSTRAINT pk_go PRIMARY KEY ( go_id )
+ ) engine=InnoDB;
+
+CREATE TABLE projeto_final.transcripts_proteins ( 
+	accesion_mrna        int UNSIGNED NOT NULL  ,
+	accession_protein    int UNSIGNED   ,
+	size_mrna            int UNSIGNED   ,
+	size_protein         int UNSIGNED   ,
+	gene_symbol          varchar(10)    ,
+	CONSTRAINT pk_transcript_protein PRIMARY KEY ( accesion_mrna )
+ ) engine=InnoDB;
+
+CREATE INDEX idx_transcripts_proteins ON projeto_final.transcripts_proteins ( gene_symbol );
+
+CREATE TABLE projeto_final.gene_clinvar ( 
+	gene_symbol          varchar(10)    ,
+	clinvar_id           int UNSIGNED   
+ ) engine=InnoDB;
+
+CREATE INDEX idx_gene_clinvar ON projeto_final.gene_clinvar ( gene_symbol );
+
+CREATE INDEX idx_gene_clinvar ON projeto_final.gene_clinvar ( clinvar_id );
+
+CREATE TABLE projeto_final.gene_go ( 
+	gene_symbol          varchar(10)    ,
+	go_id                int UNSIGNED   
+ ) engine=InnoDB;
+
+CREATE INDEX idx_gene_go ON projeto_final.gene_go ( gene_symbol );
+
+CREATE INDEX idx_gene_go ON projeto_final.gene_go ( go_id );
+
+ALTER TABLE projeto_final.gene_clinvar ADD CONSTRAINT fk_genes FOREIGN KEY ( gene_symbol ) REFERENCES projeto_final.genes( gene_symbol ) ON DELETE NO ACTION ON UPDATE NO ACTION;
+
+ALTER TABLE projeto_final.gene_clinvar ADD CONSTRAINT fk_clinvar FOREIGN KEY ( clinvar_id ) REFERENCES projeto_final.clinvar( id ) ON DELETE NO ACTION ON UPDATE NO ACTION;
+
+ALTER TABLE projeto_final.gene_go ADD CONSTRAINT fk_genes FOREIGN KEY ( gene_symbol ) REFERENCES projeto_final.genes( gene_symbol ) ON DELETE NO ACTION ON UPDATE NO ACTION;
+
+ALTER TABLE projeto_final.gene_go ADD CONSTRAINT fk_go FOREIGN KEY ( go_id ) REFERENCES projeto_final.go( go_id ) ON DELETE NO ACTION ON UPDATE NO ACTION;
+
+ALTER TABLE projeto_final.transcripts_proteins ADD CONSTRAINT fk_genes FOREIGN KEY ( gene_symbol ) REFERENCES projeto_final.genes( gene_symbol ) ON DELETE NO ACTION ON UPDATE NO ACTION;
+
+]]></string>
+		</script>
+		<script name="Sql_005" id="Query_175c6e98" language="SQL" >
+			<string><![CDATA[CREATE SCHEMA projeto_final;
+
+CREATE TABLE projeto_final.clinvar ( 
+	id                   int UNSIGNED NOT NULL  ,
+	clinical_significance varchar(50)    ,
+	variant_type         varchar(100)    ,
+	CONSTRAINT pk_clinvar PRIMARY KEY ( id )
+ ) engine=InnoDB;
+
+CREATE TABLE projeto_final.genes ( 
+	gene_symbol          varchar(10)  NOT NULL  ,
+	location             varchar(50)    ,
+	CONSTRAINT pk_gene PRIMARY KEY ( gene_symbol )
+ ) engine=InnoDB;
+
+CREATE TABLE projeto_final.go ( 
+	go_id                int UNSIGNED NOT NULL  ,
+	qualifier            varchar(200)    ,
+	category             varchar(50)    ,
+	CONSTRAINT pk_go PRIMARY KEY ( go_id )
+ ) engine=InnoDB;
+
+CREATE TABLE projeto_final.transcripts_proteins ( 
+	accesion_mrna        int UNSIGNED NOT NULL  ,
+	accession_protein    int UNSIGNED   ,
+	size_mrna            int UNSIGNED   ,
+	size_protein         int UNSIGNED   ,
+	gene_symbol          varchar(10)    ,
+	CONSTRAINT pk_transcript_protein PRIMARY KEY ( accesion_mrna )
+ ) engine=InnoDB;
+
+CREATE INDEX idx_transcripts_proteins ON projeto_final.transcripts_proteins ( gene_symbol );
+
+CREATE TABLE projeto_final.gene_clinvar ( 
+	gene_symbol          varchar(10)    ,
+	clinvar_id           int UNSIGNED   
+ ) engine=InnoDB;
+
+CREATE INDEX idx_gene_clinvar ON projeto_final.gene_clinvar ( gene_symbol );
+
+CREATE INDEX idx_gene_clinvar ON projeto_final.gene_clinvar ( clinvar_id );
+
+CREATE TABLE projeto_final.gene_go ( 
+	gene_symbol          varchar(10)    ,
+	go_id                int UNSIGNED   
+ ) engine=InnoDB;
+
+CREATE INDEX idx_gene_go ON projeto_final.gene_go ( gene_symbol );
+
+CREATE INDEX idx_gene_go ON projeto_final.gene_go ( go_id );
+
+ALTER TABLE projeto_final.gene_clinvar ADD CONSTRAINT fk_genes FOREIGN KEY ( gene_symbol ) REFERENCES projeto_final.genes( gene_symbol ) ON DELETE NO ACTION ON UPDATE NO ACTION;
+
+ALTER TABLE projeto_final.gene_clinvar ADD CONSTRAINT fk_clinvar FOREIGN KEY ( clinvar_id ) REFERENCES projeto_final.clinvar( id ) ON DELETE NO ACTION ON UPDATE NO ACTION;
+
+ALTER TABLE projeto_final.gene_go ADD CONSTRAINT fk_genes FOREIGN KEY ( gene_symbol ) REFERENCES projeto_final.genes( gene_symbol ) ON DELETE NO ACTION ON UPDATE NO ACTION;
+
+ALTER TABLE projeto_final.gene_go ADD CONSTRAINT fk_go FOREIGN KEY ( go_id ) REFERENCES projeto_final.go( go_id ) ON DELETE NO ACTION ON UPDATE NO ACTION;
+
+ALTER TABLE projeto_final.transcripts_proteins ADD CONSTRAINT fk_genes FOREIGN KEY ( gene_symbol ) REFERENCES projeto_final.genes( gene_symbol ) ON DELETE NO ACTION ON UPDATE NO ACTION;
+
+]]></string>
+		</script>
+		<script name="Sql_006" id="Query_9b16ffd" language="SQL" >
+			<string><![CDATA[CREATE SCHEMA projeto_final;
+
+CREATE TABLE projeto_final.clinvar ( 
+	id                   int UNSIGNED NOT NULL  ,
+	clinical_significance varchar(50)    ,
+	variant_type         varchar(100)    ,
+	CONSTRAINT pk_clinvar PRIMARY KEY ( id )
+ ) engine=InnoDB;
+
+CREATE TABLE projeto_final.genes ( 
+	gene_symbol          varchar(10)  NOT NULL  ,
+	location             varchar(50)    ,
+	CONSTRAINT pk_gene PRIMARY KEY ( gene_symbol )
+ ) engine=InnoDB;
+
+CREATE TABLE projeto_final.go ( 
+	go_id                int UNSIGNED NOT NULL  ,
+	qualifier            varchar(200)    ,
+	category             varchar(50)    ,
+	CONSTRAINT pk_go PRIMARY KEY ( go_id )
+ ) engine=InnoDB;
+
+CREATE TABLE projeto_final.transcripts_proteins ( 
+	accesion_mrna        int UNSIGNED NOT NULL  ,
+	accession_protein    int UNSIGNED   ,
+	size_mrna            int UNSIGNED   ,
+	size_protein         int UNSIGNED   ,
+	gene_symbol          varchar(10)    ,
+	CONSTRAINT pk_transcript_protein PRIMARY KEY ( accesion_mrna )
+ ) engine=InnoDB;
+
+CREATE INDEX idx_transcripts_proteins ON projeto_final.transcripts_proteins ( gene_symbol );
+
+CREATE TABLE projeto_final.gene_clinvar ( 
+	gene_symbol          varchar(10)    ,
+	clinvar_id           int UNSIGNED   
+ ) engine=InnoDB;
+
+CREATE INDEX idx_gene_clinvar ON projeto_final.gene_clinvar ( gene_symbol );
+
+CREATE INDEX idx_gene_clinvar ON projeto_final.gene_clinvar ( clinvar_id );
+
+CREATE TABLE projeto_final.gene_go ( 
+	gene_symbol          varchar(10)    ,
+	go_id                int UNSIGNED   
+ ) engine=InnoDB;
+
+CREATE INDEX idx_gene_go ON projeto_final.gene_go ( gene_symbol );
+
+CREATE INDEX idx_gene_go ON projeto_final.gene_go ( go_id );
+
+ALTER TABLE projeto_final.gene_clinvar ADD CONSTRAINT fk_genes FOREIGN KEY ( gene_symbol ) REFERENCES projeto_final.genes( gene_symbol ) ON DELETE NO ACTION ON UPDATE NO ACTION;
+
+ALTER TABLE projeto_final.gene_clinvar ADD CONSTRAINT fk_clinvar FOREIGN KEY ( clinvar_id ) REFERENCES projeto_final.clinvar( id ) ON DELETE NO ACTION ON UPDATE NO ACTION;
+
+ALTER TABLE projeto_final.gene_go ADD CONSTRAINT fk_genes FOREIGN KEY ( gene_symbol ) REFERENCES projeto_final.genes( gene_symbol ) ON DELETE NO ACTION ON UPDATE NO ACTION;
+
+ALTER TABLE projeto_final.gene_go ADD CONSTRAINT fk_go FOREIGN KEY ( go_id ) REFERENCES projeto_final.go( go_id ) ON DELETE NO ACTION ON UPDATE NO ACTION;
+
+ALTER TABLE projeto_final.transcripts_proteins ADD CONSTRAINT fk_genes FOREIGN KEY ( gene_symbol ) REFERENCES projeto_final.genes( gene_symbol ) ON DELETE NO ACTION ON UPDATE NO ACTION;
+
+]]></string>
+		</script>
+		<script name="db_schizophrenia.sql" id="Query_32f85176" language="SQL" file="file:/home/thiago/labBioInfo/trabalho_final/Scripts/db_schizophrenia.sql" />
+	</layout>
+</project>
